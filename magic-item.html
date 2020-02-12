@@ -1,0 +1,92 @@
+<html>
+	<head>
+		<title>Random Magic Item Properties</title>
+		
+		<style>
+			section {/*
+				display: flex;
+				justify-context: space-between; */
+				margin-top: 1em;
+				border: 2px purple solid;
+				border-radius: 20px;
+				padding: 0.75em;
+				box-shadow: 10px 5px 5px rgba(0, 0, 255, 0.3);
+				background-color: rgba(0, 0, 255, 0.15);
+			}
+			
+			div {
+				font-size: 1.1em;
+			}
+			
+			div:first-child {
+				margin-right: 1em;
+				font-size: 1.4em;
+				font-weight: bold;
+			}
+			
+			main {
+				width: 800px;
+				margin-left: auto;
+				margin-right: auto;
+			}
+		
+		</style>
+	</head>
+	<body>
+		<main>
+			<h1>Your Item Is...</h3>
+			<section>
+				<div>Origin</div>
+				<div id="origin-text"></div>
+			</section>
+			<section>
+				<div>Detail</div>
+				<div id="detail-text"></div>
+			</section>
+			<section>
+				<div>Property/Properties</div>
+				<div id="property-text"></div>
+			</section>
+			<section>
+				<div>Quirk</div>
+				<div id="quirk-text"></div>
+			</section>
+		</main>
+	
+		<script>
+		
+			const random = arr => arr[Math.floor(Math.random() * Math.floor(arr.length))];
+		
+			const doobery = async () => {
+				const histories = await fetch("data-files/history.json").then(res => res.json());
+				const origins = await fetch("data-files/origin.json").then(res => res.json());
+				const properties = await fetch("data-files/minor-property.json").then(res => res.json());
+				const quirks = await fetch("data-files/quirk.json").then(res => res.json());
+				
+				const initialProperty = random(properties);
+				let propertyText = initialProperty.text;
+				
+				if(initialProperty.numberRange === '20') {
+					const randomPropertyNot20 = () => {
+						let not20 = random(properties);
+						while(not20.numberRange === '20') {
+							not20 = random(properties);
+						}
+						return not20;
+					}
+				
+					propertyText = randomPropertyNot20().text + '<br><br>' + randomPropertyNot20().text;
+				}
+				
+				document.querySelector('#origin-text').innerHTML = random(origins).text;
+				document.querySelector('#detail-text').innerHTML = random(histories).text;
+				document.querySelector('#property-text').innerHTML = propertyText;
+				document.querySelector('#quirk-text').innerHTML = random(quirks).text;
+			};
+			doobery();
+			
+		
+		</script>
+	</body>
+	</head>
+</html>
