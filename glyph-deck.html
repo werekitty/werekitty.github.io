@@ -8,9 +8,18 @@
         }
 
         main {
-            width: 800px;
+            width: 100%;
             margin-left: auto;
             margin-right: auto;
+        }
+        #table {
+            width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+        }
+        .tableZone {
+            flex: 1;
         }
 
         .card {
@@ -40,21 +49,41 @@
 <main>
     <h1>Elder Runes</h1>
 
+    <div id="table">
+        <div id="deck" class="tableZone"></div>
+        <div id="currentCard" class="tableZone"></div>
+        <div id="discard" class="tableZone"></div>
+    </div>
+
 </main>
 </body>
 <script>
-    const dooberry = async () => {
-        const cardNames = await fetch("data-files/elder-runes.json").then(res => res.json());
-        const cards = cardNames.map(createCard);
-        cards.forEach(card => document.querySelector('main').appendChild(card));
-
-        function createCard(name) {
-            const card = document.createElement('div');
-            card.className = "card";
-            card.id = `card-${name}`;
-            card.innerHTML = `<img src="img/${name}.jpg" />`;
-            return card;
+    function randomInt(max) {
+      return Math.floor(Math.random() * Math.floor(max));
+    }
+    function shuffle(cardNames) {
+        const unused = cardNames.slice(0);
+        const shuffled = [];
+        while(shuffled.length < cardNames.length) {
+            const [randomCard] = unused.splice(randomInt(unused.length), 1);
+            shuffled.push(randomCard);
         }
+        return shuffled;
+    }
+    function createCard(name, faceDown=false) {
+        const card = document.createElement('div');
+        card.className = "card";
+        card.id = `card-${name}`;
+        if(! faceDown) {
+            card.innerHTML = `<img src="img/${name}.jpg" />`;
+        }
+        return card;
+    }
+
+    const dooberry = async () => {
+        const cardNames = shuffle( await fetch("data-files/elder-runes.json").then(res => res.json()) );
+        const cards = cardNames.map(name => createCard(name, false));
+        cards.forEach(card => document.querySelector('#deck').appendChild(card));
     };
     dooberry();
 </script>
