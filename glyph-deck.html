@@ -27,18 +27,28 @@
             height: 232px;
             border: 2px rgb(200, 0, 120) solid;
             box-shadow: 10px 5px 5px rgba(0, 0, 0, 0.3);
-            background-color: rgba(255, 0, 120, 0.15);
+            background-color: rgba(255, 50, 170, 1);
         }
         .card img {
             width: 170px;
             height: 232px;
         }
 
-        .card.selected {
+        #deck .card:not(:first-child) {
+            margin-top: -200px;
+        }
+        #discard .card:not(:first-child) {
+            margin-top: -200px;
+        }
+
+        #deck .card img {
+            display: none;
+        }
+        #currentCard .card {
             width: 342px;
             height: 465px;
         }
-        .card.selected img {
+        #currentCard .card img {
             width: 342px;
             height: 465px;
         }
@@ -48,7 +58,8 @@
 
 <main>
     <h1>Elder Runes</h1>
-
+    <button id="drawButton">Draw</button>
+    <button onclick="window.localStorage.removeItem('glyph-deck-state');location.reload()">Reshuffle</button>
     <div id="table">
         <div id="deck" class="tableZone"></div>
         <div id="currentCard" class="tableZone"></div>
@@ -70,21 +81,67 @@
         }
         return shuffled;
     }
-    function createCard(name, faceDown=false) {
+    function createCard(name) {
         const card = document.createElement('div');
         card.className = "card";
         card.id = `card-${name}`;
-        if(! faceDown) {
-            card.innerHTML = `<img src="img/${name}.jpg" />`;
-        }
+        card.innerHTML = `<img src="img/${name}.jpg" />`;
         return card;
     }
 
-    const dooberry = async () => {
-        const cardNames = shuffle( await fetch("data-files/elder-runes.json").then(res => res.json()) );
-        const cards = cardNames.map(name => createCard(name, false));
-        cards.forEach(card => document.querySelector('#deck').appendChild(card));
+    const setup = async () => {
+        let state;
+        if(window.localStorage.getItem('glyph-deck-state')) {
+            state = JSON.parse(window.localStorage.getItem('glyph-deck-state'));
+        } else {
+            state = {
+                deck: shuffle( await fetch("data-files/elder-runes.json").then(res => res.json()) ),
+                selected: null,
+                discard: []
+            };
+        }
+
+        const deckPile = document.querySelector('#deck');
+        const currentRegion = document.querySelector('#currentCard');
+        const discardPile = document.querySelector('#discard');
+
+        if(state.deck.length !== 0) {
+            const deckCards = state.deck.map(createCard);
+            deckCards.forEach(card => deckPile.appendChild(card));
+        }
+        if(state.selected) {
+            const selectedCard = createCard(state.selected);
+            currentRegion.appendChild(selectedCard);
+        }
+        if(state.discard.length !== 0) {
+            const discardCards = state.discard.map(createCard);
+            discardCards.forEach(card => discardPile.appendChild(card));
+        }
+
+        document.querySelector('#drawButton').onclick = () => {
+            if(state.deck.length < 1) {
+                return;
+            }
+            const drawn = state.deck.shift();
+            const discarded = state.selected;
+
+            //Updating the state
+            state.selected = drawn;
+            if(discarded) state.discard.push(discarded);
+            window.localStorage.setItem('glyph-deck-state', JSON.stringify(state));
+
+            //Updating the table
+            const drawnCard = document.querySelector(`#card-${drawn}`);
+            if(discarded) {
+                const discardedCard = document.querySelector(`#card-${discarded}`);
+                discardedCard.remove();
+                discardPile.appendChild(discardedCard);
+            }
+            drawnCard.remove();
+            currentRegion.appendChild(drawnCard);
+
+        };
     };
-    dooberry();
+    setup();
 </script>
 </html>
