@@ -2,6 +2,11 @@
 <head>
     <title>Star Wars D6 XP/SP Calculator - No Save On Refresh</title>
     <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+    <style>
+        input:invalid {
+            border-color: red;
+        }
+    </style>
 </head>
 <body>
 
@@ -18,8 +23,8 @@
             </tr>
             <tr>
                 <td><input type="text" /></td>
-                <td><input type="text" class="current_input"/></td>
-                <td><input type="text" class="target_input"/></td>
+                <td><input type="text" class="current_input" pattern="\d*[Dd](\+[0-2])?"/></td>
+                <td><input type="text" class="target_input" pattern="\d*[Dd](\+[0-2])?"/></td>
                 <td><span class="sp_cost"></span></td>
             </tr>
         </table>
@@ -41,8 +46,9 @@
     // add current scoosh
     // add target pluses
     const getSpCost = (current, target) => {
-        const [currentDice = 0, currentPips = 0] = current.split(/D[\\+]?/).map(v => v ? parseInt(v.trim()) : 0);
-        const [targetDice = 0, targetPips = 0] = target.split(/D[\\+]?/).map(v => v ? parseInt(v.trim()) : 0);
+        const extractDiceAndPips = s => s.split(/[Dd][\\+]?/).map(v => v ? parseInt(v.trim()) : 0);
+        const [currentDice = 0, currentPips = 0] = extractDiceAndPips(current);
+        const [targetDice = 0, targetPips = 0] = extractDiceAndPips(target);
 
         console.log(currentDice, currentPips, targetDice, targetPips);
 
@@ -86,12 +92,19 @@
 
     const recalculateOnChange = (e) => {
         const row = e.target.closest('tr');
+        const setSpCostText = cost => row.querySelector('.sp_cost').textContent = cost;
+
+        if(! e.target.checkValidity()) {
+            setSpCostText('');
+            return;
+        }
+
+
         console.log(e.target.value);
-        const current = row.querySelector('input.current_input').value;
-        const target = row.querySelector('input.target_input').value;
-        if(current && target) {
-            const spCost = getSpCost(current, target);
-            row.querySelector('.sp_cost').textContent = spCost;
+        const current = row.querySelector('input.current_input');
+        const target = row.querySelector('input.target_input');
+        if(current.value && target.value && current.checkValidity() && target.checkValidity()) {
+            setSpCostText(getSpCost(current.value, target.value));
             doTotal();
         }
     };
@@ -100,8 +113,8 @@
         const newRow = document.createElement('tr');
         newRow.innerHTML = `
                 <td><input type="text" /></td>
-                <td><input type="text" class="current_input"/></td>
-                <td><input type="text" class="target_input"/></td>
+                <td><input type="text" class="current_input" pattern="\\d*[Dd](\\+[0-2])?"/></td>
+                <td><input type="text" class="target_input" pattern="\\d*[Dd](\\+[0-2])?"/></td>
                 <td><span class="sp_cost"></span></td>`;
         document.querySelector('table tr').parentElement.appendChild(newRow);
         newRow.querySelectorAll('input.target_input, input.current_input').forEach(i => i.onchange = recalculateOnChange);
