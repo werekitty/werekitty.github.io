@@ -24,10 +24,16 @@
             </tr>
         </table>
         <button type="button" id="add_row_button">+ Add Row</button>
+        <h2>TOTAL: <span id="total"></span></h2>
     </div>
 </main>
 </body>
 <script>
+
+    const doTotal = () => {
+        const total = Array.from(document.querySelectorAll('table td .sp_cost')).map(v => v.textContent && parseInt(v.textContent) || 0).reduce((a, b) => a + b, 0);
+        document.querySelector('#total').textContent = total;
+    };
 
     // scoosh current up to next dice
     // ignore target pluses, actually deduct one from the target dice as we won't be spending any sp at that value except pluses
@@ -86,6 +92,7 @@
         if(current && target) {
             const spCost = getSpCost(current, target);
             row.querySelector('.sp_cost').textContent = spCost;
+            doTotal();
         }
     };
 
