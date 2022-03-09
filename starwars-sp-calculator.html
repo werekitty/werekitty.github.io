@@ -1,0 +1,106 @@
+<html>
+<head>
+    <title>Elder Runes</title>
+    <link href="https://fonts.googleapis.com/css?family=Roboto&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<main>
+    <h1>SP Calculation</h1>
+    <p>Enter values in this format: 3D+1</p>
+    <div>
+        <table>
+            <tr>
+                <th>Skill</th>
+                <th>Current</th>
+                <th>Target</th>
+                <th>SP Cost</th>
+            </tr>
+            <tr>
+                <td><input type="text" /></td>
+                <td><input type="text" class="current_input"/></td>
+                <td><input type="text" class="target_input"/></td>
+                <td><span class="sp_cost"></span></td>
+            </tr>
+        </table>
+        <button type="button" id="add_row_button">+ Add Row</button>
+    </div>
+</main>
+</body>
+<script>
+
+    // scoosh current up to next dice
+    // ignore target pluses, actually deduct one from the target dice as we won't be spending any sp at that value except pluses
+    // ( current dice + target dice ) * (target dice - current dice + 1) = adds the sequence then * 3 for sp cost
+    // add current scoosh
+    // add target pluses
+    const getSpCost = (current, target) => {
+        const [currentDice = 0, currentPips = 0] = current.split(/D[\\+]?/).map(v => v ? parseInt(v.trim()) : 0);
+        const [targetDice = 0, targetPips = 0] = target.split(/D[\\+]?/).map(v => v ? parseInt(v.trim()) : 0);
+
+        console.log(currentDice, currentPips, targetDice, targetPips);
+
+        const start = currentDice + 1;
+        const end = targetDice - 1;
+
+        // 1D => 3D
+        // 3 (2D) + 6 (3D) = 9
+        // start = 2
+        // end = 2
+        // One sequence makes sense. It'll just be the sequence value x 3.
+        let sequenceSum;
+        if(end < start) {
+            sequenceSum = 0;
+        } else {
+            // n/2 x first+last
+            // 0.5 * 12 = 6
+            sequenceSum = ( (end - start + 1)/2 ) * (start + end);
+            // Multiply by 3 for those pip costs
+            sequenceSum = sequenceSum * 3;
+        }
+
+        // Now we have to reapply the start and end costs
+        // start: 6+1 - meaning we'd have had to pay 6+6=12 to get to 7D
+        let startAdjustment;
+        if(currentDice === targetDice) {
+            startAdjustment = (targetPips - currentPips) * currentDice;
+        } else {
+            startAdjustment = (3 - currentPips) * currentDice;
+        }
+
+        let endAdjustment;
+        if(currentDice === targetDice) {
+            endAdjustment = 0; // The pip difference was accounted for in the start adjustment
+        } else {
+            endAdjustment = targetPips * targetDice;
+        }
+
+        return sequenceSum + startAdjustment + endAdjustment;
+    };
+
+    const recalculateOnChange = (e) => {
+        const row = e.target.closest('tr');
+        console.log(e.target.value);
+        const current = row.querySelector('input.current_input').value;
+        const target = row.querySelector('input.target_input').value;
+        if(current && target) {
+            const spCost = getSpCost(current, target);
+            row.querySelector('.sp_cost').textContent = spCost;
+        }
+    };
+
+    document.querySelector('#add_row_button').onclick = () => {
+        const newRow = document.createElement('tr');
+        newRow.innerHTML = `<tr>
+                <td><input type="text" /></td>
+                <td><input type="text" class="current_input"/></td>
+                <td><input type="text" class="target_input"/></td>
+                <td><span class="sp_cost"></span></td>
+            </tr>`;
+        document.querySelector('table').appendChild(newRow);
+        newRow.querySelectorAll('input.target_input, input.current_input').forEach(i => i.onchange = recalculateOnChange);
+    }
+
+    document.querySelectorAll('table td input.current_input, table td input.target_input').forEach(i => i.onchange = recalculateOnChange);
+</script>
+</html>
