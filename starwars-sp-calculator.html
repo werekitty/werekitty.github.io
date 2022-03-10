@@ -6,6 +6,22 @@
         input:invalid {
             border-color: red;
         }
+        #modal.hidden {
+            display: none;
+        }
+        #modal {
+            display: block;
+            position: absolute;
+            width: 90%;
+            min-width: 500px;
+            height: 90%;
+            min-height: 500px;
+            top: 10px;
+            left: 10%;
+            background-color: white;
+            box-shadow: 10px 5px 5px black;
+            overflow: scroll;
+        }
     </style>
 </head>
 <body>
@@ -14,7 +30,7 @@
     <h1>SP Calculation</h1>
     <p>Enter values in this format: 3D+1</p>
     <div>
-        <table>
+        <table id="mainSpTable">
             <tr>
                 <th>Skill</th>
                 <th>Current</th>
@@ -31,12 +47,24 @@
         <button type="button" id="add_row_button">+ Add Row</button>
         <h2>TOTAL: <span id="total"></span></h2>
     </div>
+    <button type="button" id="getTableToCopy">Popup table for copying</button>
 </main>
+<div id="modal" class="hidden">
+    <button type="button" id="modalCloseButton">Hide</button>
+    <h2>Raw Table</h2>
+    <div id="modalTableContainer">
+
+    </div>
+    <h2>For Obsidian Portal</h2>
+    <pre id="forOp">
+
+    </pre>
+</div>
 </body>
 <script>
 
     const doTotal = () => {
-        const total = Array.from(document.querySelectorAll('table td .sp_cost')).map(v => v.textContent && parseInt(v.textContent) || 0).reduce((a, b) => a + b, 0);
+        const total = Array.from(document.querySelectorAll('table#mainSpTable td .sp_cost')).map(v => v.textContent && parseInt(v.textContent) || 0).reduce((a, b) => a + b, 0);
         document.querySelector('#total').textContent = total;
     };
 
@@ -51,6 +79,11 @@
         const [targetDice = 0, targetPips = 0] = extractDiceAndPips(target);
 
         console.log(currentDice, currentPips, targetDice, targetPips);
+
+        if(targetDice < currentDice || (targetDice === currentDice && targetPips < currentPips)) {
+            // Target is smaller, that'll cost 0
+            return 0;
+        }
 
         const start = currentDice + 1;
         const end = targetDice - 1;
@@ -109,6 +142,43 @@
         }
     };
 
+    document.querySelector('#modalCloseButton').onclick = e => document.querySelector('#modal').classList.add('hidden');
+    document.querySelector('#getTableToCopy').onclick = e => popupTableForCopying();
+
+    const popupTableForCopying = () => {
+        const tableGoesHere = document.querySelector('#modalTableContainer');
+        tableGoesHere.innerHTML = '';
+        const modal = document.querySelector('#modal');
+        const tableToCopy = document.querySelector('table#mainSpTable');
+        tableGoesHere.appendChild( tableToCopy.cloneNode(true) );
+        tableGoesHere.children.item(0).removeAttribute('id');
+        console.log(tableGoesHere.innerHTML);
+
+        tableGoesHere.querySelectorAll('input').forEach(input => {
+            const text = input.value;
+            console.log(text);
+            const span = document.createElement('span');
+            span.textContent = text;
+            const parent = input.parentElement;
+            parent.insertBefore(span, input);
+            parent.removeChild(input);
+        });
+
+        const opText = '| ' + Array.from(tableGoesHere.querySelectorAll('tr')).map(row => {
+            return Array.from(row.querySelectorAll('td, th')).map(cell => {
+                if(cell.nodeName.toLowerCase() === 'th') {
+                    return ` *${cell.textContent}* `;
+                } else {
+                    return ` ${cell.textContent} `;
+                }
+            }).join('|');
+        }).join('|\n|') + '|';
+
+        console.log(opText);
+        document.querySelector('#forOp').textContent = opText;
+        modal.classList.remove('hidden');
+    }
+
     document.querySelector('#add_row_button').onclick = () => {
         const newRow = document.createElement('tr');
         newRow.innerHTML = `
@@ -116,10 +186,10 @@
                 <td><input type="text" class="current_input" pattern="\\d*[Dd](\\+[0-2])?"/></td>
                 <td><input type="text" class="target_input" pattern="\\d*[Dd](\\+[0-2])?"/></td>
                 <td><span class="sp_cost"></span></td>`;
-        document.querySelector('table tr').parentElement.appendChild(newRow);
+        document.querySelector('table#mainSpTable tr').parentElement.appendChild(newRow);
         newRow.querySelectorAll('input.target_input, input.current_input').forEach(i => i.onchange = recalculateOnChange);
     }
 
-    document.querySelectorAll('table td input.current_input, table td input.target_input').forEach(i => i.onchange = recalculateOnChange);
+    document.querySelectorAll('table#mainSpTable td input.current_input, table#mainSpTable td input.target_input').forEach(i => i.onchange = recalculateOnChange);
 </script>
 </html>
