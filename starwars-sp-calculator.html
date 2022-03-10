@@ -233,6 +233,7 @@
 
     if(window.localStorage.getItem('costings')) {
         fromJson(JSON.parse(window.localStorage.getItem('costings')));
+        doTotal();
     }
 
     document.querySelectorAll('table#mainSpTable td input.current_input, table#mainSpTable td input.target_input').forEach(i => i.onchange = recalculateOnChange);
