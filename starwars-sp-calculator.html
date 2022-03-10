@@ -10,16 +10,27 @@
             display: none;
         }
         #modal {
+            height: 100%;
+            width: 100%;
+            background-color: rgba(10, 10, 10, 0.5);
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+        #modal #modalChild {
             display: block;
             position: absolute;
             width: 90%;
             min-width: 500px;
             height: 90%;
             min-height: 500px;
+            padding: 10px;
+            max-width: 500px;
             top: 10px;
-            left: 10%;
+            left: 5%;
             background-color: white;
-            box-shadow: 10px 5px 5px black;
+            box-shadow: 20px 5px 5px rgba(0, 0, 0, 0.3);
+            border: grey solid 1px;
             overflow: scroll;
         }
     </style>
@@ -50,15 +61,17 @@
     <button type="button" id="getTableToCopy">Popup table for copying</button>
 </main>
 <div id="modal" class="hidden">
-    <button type="button" id="modalCloseButton">Hide</button>
-    <h2>Raw Table</h2>
-    <div id="modalTableContainer">
+    <div id="modalChild">
+        <button type="button" id="modalCloseButton">Hide</button>
+        <h2>Raw Table</h2>
+        <div id="modalTableContainer">
 
+        </div>
+        <h2>For Obsidian Portal</h2>
+        <pre id="forOp">
+
+        </pre>
     </div>
-    <h2>For Obsidian Portal</h2>
-    <pre id="forOp">
-
-    </pre>
 </div>
 </body>
 <script>
