@@ -42,7 +42,7 @@
     <p>Enter values in this format: 3D+1</p>
     <div>
         <table id="mainSpTable">
-            <tr>
+            <tr class="headerRow">
                 <th>Skill</th>
                 <th>Current</th>
                 <th>Target</th>
@@ -59,6 +59,10 @@
         <h2>TOTAL: <span id="total"></span></h2>
     </div>
     <button type="button" id="getTableToCopy">Popup table for copying</button>
+    <details>
+        <summary>Heckin clear data</summary>
+        <button type="button" onclick="window.localStorage.clear();window.location.reload()">Clear that heckin data</button>
+    </details>
 </main>
 <div id="modal" class="hidden">
     <div id="modalChild">
@@ -76,6 +80,35 @@
 </body>
 <script>
 
+    const toJson = () => {
+        return Array.from(document
+            .querySelectorAll('table#mainSpTable tr:not(.headerRow)'))
+            .map(row => {
+                const [skill, current, target, spCost] = Array.from(row.querySelectorAll('td'))
+                    .map(cell => cell.textContent || cell.querySelector('input')?.value || '');
+                return {skill, current, target, spCost};
+            });
+    }
+
+    const fromJson = (costings) => {
+        const newRows = costings.map(costing => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td><input type="text" /></td>
+                <td><input type="text" class="current_input" pattern="\\d*[Dd](\\+[0-2])?"/></td>
+                <td><input type="text" class="target_input" pattern="\\d*[Dd](\\+[0-2])?"/></td>
+                <td><span class="sp_cost"></span></td>`
+            const inputs = Array.from(row.querySelectorAll('input'));
+            inputs[0].value = costing.skill;
+            inputs[1].value = costing.current;
+            inputs[2].value = costing.target;
+            row.querySelector('.sp_cost').textContent = costing.spCost;
+            return row;
+        });
+        document.querySelectorAll('table#mainSpTable tr:not(.headerRow)').forEach(row => row.remove());
+        document.querySelector('table#mainSpTable tr.headerRow').parentElement.append(...newRows);
+    }
+
     const doTotal = () => {
         const total = Array.from(document.querySelectorAll('table#mainSpTable td .sp_cost')).map(v => v.textContent && parseInt(v.textContent) || 0).reduce((a, b) => a + b, 0);
         document.querySelector('#total').textContent = total;
@@ -90,8 +123,6 @@
         const extractDiceAndPips = s => s.split(/[Dd][\\+]?/).map(v => v ? parseInt(v.trim()) : 0);
         const [currentDice = 0, currentPips = 0] = extractDiceAndPips(current);
         const [targetDice = 0, targetPips = 0] = extractDiceAndPips(target);
-
-        console.log(currentDice, currentPips, targetDice, targetPips);
 
         if(targetDice < currentDice || (targetDice === currentDice && targetPips < currentPips)) {
             // Target is smaller, that'll cost 0
@@ -142,17 +173,17 @@
 
         if(! e.target.checkValidity()) {
             setSpCostText('');
+            window.localStorage.setItem('costings', JSON.stringify(toJson()));
             return;
         }
 
-
-        console.log(e.target.value);
         const current = row.querySelector('input.current_input');
         const target = row.querySelector('input.target_input');
         if(current.value && target.value && current.checkValidity() && target.checkValidity()) {
             setSpCostText(getSpCost(current.value, target.value));
             doTotal();
         }
+        window.localStorage.setItem('costings', JSON.stringify(toJson()));
     };
 
     document.querySelector('#modalCloseButton').onclick = e => document.querySelector('#modal').classList.add('hidden');
@@ -165,11 +196,9 @@
         const tableToCopy = document.querySelector('table#mainSpTable');
         tableGoesHere.appendChild( tableToCopy.cloneNode(true) );
         tableGoesHere.children.item(0).removeAttribute('id');
-        console.log(tableGoesHere.innerHTML);
 
         tableGoesHere.querySelectorAll('input').forEach(input => {
             const text = input.value;
-            console.log(text);
             const span = document.createElement('span');
             span.textContent = text;
             const parent = input.parentElement;
@@ -187,7 +216,6 @@
             }).join('|');
         }).join('|\n|') + '|';
 
-        console.log(opText);
         document.querySelector('#forOp').textContent = opText;
         modal.classList.remove('hidden');
     }
@@ -201,6 +229,10 @@
                 <td><span class="sp_cost"></span></td>`;
         document.querySelector('table#mainSpTable tr').parentElement.appendChild(newRow);
         newRow.querySelectorAll('input.target_input, input.current_input').forEach(i => i.onchange = recalculateOnChange);
+    }
+
+    if(window.localStorage.getItem('costings')) {
+        fromJson(JSON.parse(window.localStorage.getItem('costings')));
     }
 
     document.querySelectorAll('table#mainSpTable td input.current_input, table#mainSpTable td input.target_input').forEach(i => i.onchange = recalculateOnChange);
