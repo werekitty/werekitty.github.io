@@ -35,6 +35,7 @@
 
     <div>
         <label>Current XP: <input type="text" id="currentXp" min="0" /></label>
+        <label>Add: <input type="text" id="addXp" /></label>
     </div>
 
     <div>
@@ -166,7 +167,7 @@
 
 <script>
     const levelData = Array.from(document.querySelectorAll('#levelsTable tbody tr')).map(tr => {
-        const [xp, level, proficiencyBonus] = Array.from(tr.querySelectorAll('td')).map(td => parseInt(td.textContent.replace(',', '')));
+        const [xp, level, proficiencyBonus] = Array.from(tr.querySelectorAll('td')).map(td => intVal(td.textContent));
         return {xp, level, proficiencyBonus}
     });
     const currentLevelElement = document.querySelector('#currentLevel');
@@ -208,9 +209,18 @@
     }
 
     const currentXpInput = document.querySelector('#currentXp');
+    const addXpInput = document.querySelector('#addXp');
 
     currentXpInput.addEventListener('change', (event) => {
-        updateScreenForXp(parseInt( event.target.value.replaceAll(',', '')));
+        updateScreenForXp(intVal( event.target.value));
+    });
+
+    addXpInput.addEventListener('change', event => {
+        const amountToAdd = intVal(event.target.value);
+        addXpInput.value = '';
+        const newXpValue = intVal(currentXpInput.value, 0) + amountToAdd;
+        currentXpInput.value = newXpValue.toLocaleString('en');
+        updateScreenForXp(newXpValue);
     });
 
     if(localStorage.getItem('percentage-progress-current-xp')) {
@@ -224,6 +234,13 @@
         const xpAcquiredThisLevel = currentXp - currentLevelXp;
         const percentageThroughLevel = (100 / xpNeededEntireLevel) * xpAcquiredThisLevel;
         return Math.round(percentageThroughLevel);
+    }
+
+    function intVal(str, defaultValue) {
+        if(! str && defaultValue) {
+            return defaultValue;
+        }
+        return parseInt( (str + '').replaceAll(',', '') );
     }
 </script>
 </html>
