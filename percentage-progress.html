@@ -300,6 +300,7 @@
 
 
 <script>
+    const friendlyNumber = i => Math.round(i).toLocaleString('en');
 
     const levelData = Array.from(document.querySelectorAll('#levelsTable tbody tr')).map(tr => {
         const [xp, level, encounterXp, proficiencyBonus] = Array.from(tr.querySelectorAll('td')).map(td => intVal(td.textContent));
@@ -341,7 +342,7 @@
             const percentageProgress = Math.round(( 100 / epicBoonRate ) * xpSinceLastBoon);
             const nextBoonTotalXp = currentXp + epicBoonRate - xpSinceLastBoon;
             currentLevelElement.textContent = '20 & ' + numberOfBoons + ' epic boons';
-            nextLevelElement.textContent = '20 & ' + (numberOfBoons + 1) + ' epic boons (' + nextBoonTotalXp.toLocaleString('en') + 'xp)';
+            nextLevelElement.textContent = '20 & ' + (numberOfBoons + 1) + ' epic boons (' + friendlyNumber(nextBoonTotalXp) + 'xp)';
             percentageElement.textContent = percentageProgress + '%';
             progressBar.style.width = percentageProgress + '%';
         } else {
@@ -350,7 +351,7 @@
             const currentLevel = levelData[levelData.indexOf(nextLevel)-1];
             const percentageProgress = percentage(nextLevel.xp, currentLevel.xp, currentXp);
             currentLevelElement.textContent = currentLevel.level + '';
-            nextLevelElement.textContent = nextLevel.level + ' (' + nextLevel.xp.toLocaleString('en') + 'xp)';
+            nextLevelElement.textContent = nextLevel.level + ' (' + friendlyNumber(nextLevel.xp) + 'xp)';
             percentageElement.textContent = percentageProgress + '%';
             progressBar.style.width = percentageProgress + '%';
         }
@@ -367,13 +368,13 @@
         const amountToAdd = intVal(event.target.value);
         addXpInput.value = '';
         const newXpValue = intVal(currentXpInput.value, 0) + amountToAdd;
-        currentXpInput.value = newXpValue.toLocaleString('en');
+        currentXpInput.value = friendlyNumber(newXpValue);
         updateScreenForXp(newXpValue);
     });
 
     if(localStorage.getItem('percentage-progress-current-xp')) {
         const currentXpFromStorage = parseInt(localStorage.getItem('percentage-progress-current-xp'));
-        currentXpInput.value = currentXpFromStorage.toLocaleString('en');
+        currentXpInput.value = friendlyNumber(currentXpFromStorage);
         updateScreenForXp(currentXpFromStorage);
     }
 
@@ -454,11 +455,11 @@
         cloned.id = undefined;
         const groupTotal = group.xps.reduce((acc, xpSummary) => acc + xpSummary.xp, 0);
         cloned.querySelector('.xpSummaryName').textContent = group.groupName;
-        cloned.querySelector('.xpSummaryValue').textContent = groupTotal.toLocaleString('en');
+        cloned.querySelector('.xpSummaryValue').textContent = friendlyNumber(groupTotal);
         const listElement = cloned.querySelector('.xpSummaryList');
         group.xps.forEach(xpSummary => {
             const li = document.createElement('li');
-            li.textContent = xpSummary.name + ' - ' + xpSummary.xp.toLocaleString('en');
+            li.textContent = xpSummary.name + ' - ' + friendlyNumber(xpSummary.xp);
             listElement.appendChild(li);
         });
         cloneMe.parentElement.appendChild(cloned);
@@ -481,15 +482,15 @@
 
         console.log(sessionXp);
         sessionXp.xpGroups.forEach(group => addXpSummaryElement(group));
-        document.querySelector('.totalXpGained').textContent = sessionXp.grandTotal.toLocaleString('en') + ' xp';
+        document.querySelector('.totalXpGained').textContent = friendlyNumber(sessionXp.grandTotal) + ' xp';
 
         document.querySelector('#progressNewTotalBar').style.width = newPercentage + '%';
         console.log('setting style width to ' + newPercentage);
 
-        document.querySelector('#progressXpSummaryText-previously').textContent = `Level ${previousLevel.level} on ${previousXp.toLocaleString('en')}xp`;
-        document.querySelector('#progressXpSummaryText-now').textContent = `Level ${newLevelData.level} on ${newXp.toLocaleString('en')}xp`;
-        document.querySelector('#progressXpSummaryText-next').textContent = `Level ${nextLevelData.level} on ${nextLevelData.xp.toLocaleString('en')}xp`;
-        document.querySelector('#progressXpSummaryText-percent').textContent = `${newPercentage}% through level ${newLevelData.level}`;
+        document.querySelector('#progressXpSummaryText-previously').textContent = `Level ${previousLevel.level} on ${friendlyNumber(previousXp)}xp`;
+        document.querySelector('#progressXpSummaryText-now').textContent = `Level ${newLevelData.level} on ${friendlyNumber(newXp)}xp`;
+        document.querySelector('#progressXpSummaryText-next').textContent = `Level ${nextLevelData.level} on ${friendlyNumber(nextLevelData.xp)}xp`;
+        document.querySelector('#progressXpSummaryText-percent').textContent = `${newPercentage}% through level ${friendlyNumber(newLevelData.level}`;
 
     }
 
