@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculate Percentage Progress for D&D 5e XP</title>
+    <style>
+      body {
+        background-color: lightgrey;
+      }
+      #wrapperDude {
+        display: flex;
+      }
+
+      #wrapperDude > div {
+        border: 3px solid black;
+        margin-right: 2em;
+        padding: 2em;
+        background-color: white;
+      }
+      #levelsTable thead th {
+        padding-right: 0.8em;
+      }
+    </style>
+</head>
+<body>
+<div id="wrapperDude">
+    <details>
+        <summary>Levels Table</summary>
+        <table id="levelsTable">
+            <thead><tr>
+                <th><strong>Experience Points</strong></th>
+                <th><strong>Level</strong></th>
+                <th><strong title="(Medium per player)">Encounter XP</strong></th>
+                <th><strong>Proficiency Bonus</strong></th>
+            </tr></thead>
+            <tbody>
+            <tr>
+                <td>0</td>
+                <td>1</td>
+                <td>50</td>
+                <td>+2</td>
+            </tr>
+            <tr>
+                <td>300</td>
+                <td>2</td>
+                <td>100</td>
+                <td>+2</td>
+            </tr>
+            <tr>
+                <td>900</td>
+                <td>3</td>
+                <td>150</td>
+                <td>+2</td>
+            </tr>
+            <tr>
+                <td>2,700</td>
+                <td>4</td>
+                <td>250</td>
+                <td>+2</td>
+            </tr>
+            <tr>
+                <td>6,500</td>
+                <td>5</td>
+                <td>500</td>
+                <td>+3</td>
+            </tr>
+            <tr>
+                <td>14,000</td>
+                <td>6</td>
+                <td>600</td>
+                <td>+3</td>
+            </tr>
+            <tr>
+                <td>23,000</td>
+                <td>7</td>
+                <td>750</td>
+                <td>+3</td>
+            </tr>
+            <tr>
+                <td>34,000</td>
+                <td>8</td>
+                <td>900</td>
+                <td>+3</td>
+            </tr>
+            <tr>
+                <td>48,000</td>
+                <td>9</td>
+                <td>1,100</td>
+                <td>+4</td>
+            </tr>
+            <tr>
+                <td>64,000</td>
+                <td>10</td>
+                <td>1,200</td>
+                <td>+4</td>
+            </tr>
+            <tr>
+                <td>85,000</td>
+                <td>11</td>
+                <td>1,600</td>
+                <td>+4</td>
+            </tr>
+            <tr>
+                <td>100,000</td>
+                <td>12</td>
+                <td>2,000</td>
+                <td>+4</td>
+            </tr>
+            <tr>
+                <td>120,000</td>
+                <td>13</td>
+                <td>2,200</td>
+                <td>+5</td>
+            </tr>
+            <tr>
+                <td>140,000</td>
+                <td>14</td>
+                <td>2,500</td>
+                <td>+5</td>
+            </tr>
+            <tr>
+                <td>165,000</td>
+                <td>15</td>
+                <td>2,800</td>
+                <td>+5</td>
+            </tr>
+            <tr>
+                <td>195,000</td>
+                <td>16</td>
+                <td>3,200</td>
+                <td>+5</td>
+            </tr>
+            <tr>
+                <td>225,000</td>
+                <td>17</td>
+                <td>3,900</td>
+                <td>+6</td>
+            </tr>
+            <tr>
+                <td>265,000</td>
+                <td>18</td>
+                <td>4,200</td>
+                <td>+6</td>
+            </tr>
+            <tr>
+                <td>305,000</td>
+                <td>19</td>
+                <td>4,900</td>
+                <td>+6</td>
+            </tr>
+            <tr>
+                <td>355,000</td>
+                <td>20</td>
+                <td>5,700</td>
+                <td>+6<br>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </details>
+    <div>
+        <div id="currentXp"><label>Previous XP: <input type="text" value="0" /></label></div>
+        <div id="addXp"><label>Added XP: <input type="text" value="0" /></label></div>
+    </div>
+    <div>
+        <button type="button" id="copyXpSessionTotalButton">Copy HTML</button>
+        <div id="xpTotal" style="width: 400px">
+            <div style="margin-top: 0.4em; box-shadow: 5px 5px rgba(0, 0, 0, 0.2); height: 30px; border-radius: 10% / 50%; background-color: gold; padding: 10px 0 5px 0; vertical-align: middle; text-align: center; font-weight: bolder">TOTAL: <span class="totalXpGained"></span></div>
+            <div id="progressBarSummaryWrapper" style="background-color: rgba(0, 0, 0, 0.2); height: 20px; width: 400px; padding: 0; margin-top: 15px; margin-bottom: 10px; border: darkgray solid 1px;">
+                <div id="progressNewTotalBar" style="background-color: darkorange; height: 20px; margin: 0; padding: 0;"> </div>
+            </div>
+            <div><span style="width: 85px; display: inline-block; font-weight: bolder;">Before: </span><span id="progressXpSummaryText-previously"></span></div>
+            <div>
+                <span style="width: 85px; display: inline-block; font-weight: bolder;">Now: </span>
+                <span style="font-weight: bolder;" id="progressXpSummaryText-now"></span>
+            </div>
+            <div><span style="width: 85px; display: inline-block; font-weight: bolder;">Next: </span><span id="progressXpSummaryText-next"></span></div>
+            <div style="text-align: center; width: 100%; font-size: 1.2em; font-weight: bold; margin-top: 0.4em;"><span id="progressXpSummaryText-percent"></span></div>
+        </div>
+    </div>
+</div>
+</body>
+
+
+<script>
+  const friendlyNumber = i => Math.round(i).toLocaleString('en');
+
+  const levelData = Array.from(document.querySelectorAll('#levelsTable tbody tr')).map(tr => {
+    const [xp, level, encounterXp, proficiencyBonus] = Array.from(tr.querySelectorAll('td')).map(td => intVal(td.textContent));
+    return {xp, level, encounterXp, proficiencyBonus}
+  });
+  const currentXpElement = document.querySelector('#currentXp input');
+  const addXpElement = document.querySelector('#addXp input');
+
+  function getCurrentLevelData(currentXp) {
+    if(currentXp === 0) {
+      return levelData[0];
+    }
+
+    if(! currentXp || currentXp < 0) {
+      console.error('Cannot find level data for xp value of ' + currentXp);
+      return;
+    }
+    const lastLevel = levelData[levelData.length - 1]; // Level 20
+    if(lastLevel.xp < currentXp) {
+      return lastLevel;
+    }
+
+    const nextLevel = levelData.find(levelDeets => levelDeets.xp > currentXp);
+    const currentLevel = levelData[levelData.indexOf(nextLevel)-1];
+    return currentLevel;
+  }
+
+  function updateScreen() {
+    const currentXp = intVal(currentXpElement.value, 0);
+    const addXp = intVal(addXpElement.value, 0);
+
+    localStorage.setItem('percentage-progress-current-xp-simple', currentXp);
+    localStorage.setItem('percentage-progress-add-xp-simple', addXp);
+    displayXpStuff();
+  }
+
+  const currentXpInput = document.querySelector('#currentXp input');
+  const addXpInput = document.querySelector('#addXp input');
+
+  currentXpInput.addEventListener('change', (event) => {
+    updateScreen();
+  });
+
+  addXpInput.addEventListener('change', event => {
+    updateScreen();
+  });
+
+  const loadFromStorage = () => {
+    var didLoad = false;
+    if(localStorage.getItem('percentage-progress-current-xp-simple')) {
+
+      const strVal = localStorage.getItem('percentage-progress-current-xp-simple');
+      console.log('found current xp in storage: ' + strVal);
+      const currentXpFromStorage = parseInt(strVal);
+      currentXpInput.value = friendlyNumber(currentXpFromStorage);
+      didLoad = true;
+    }
+    if(localStorage.getItem('percentage-progress-add-xp-simple')) {
+      const strVal = localStorage.getItem('percentage-progress-add-xp-simple');
+      console.log('found added xp in storage: ' + strVal);
+      const addXpFromStorage = parseInt(strVal);
+      addXpInput.value = friendlyNumber(addXpFromStorage);
+      didLoad = true;
+    }
+
+    if(didLoad) {
+      updateScreen();
+    }
+  };
+  loadFromStorage();
+
+  function percentage(nextLevelXp, currentLevelXp, currentXp) {
+    const xpNeededEntireLevel = nextLevelXp - currentLevelXp;
+    const xpAcquiredThisLevel = currentXp - currentLevelXp;
+    const percentageThroughLevel = (100 / xpNeededEntireLevel) * xpAcquiredThisLevel;
+    const rounded = Math.round(percentageThroughLevel);
+    // But actually return 99 if it's 100
+    return rounded === 100 ? 99 : rounded;
+  }
+
+  function intVal(str, defaultValue) {
+    if(! str && defaultValue) {
+      return defaultValue;
+    }
+    return parseInt( (str + '').replaceAll(',', '') );
+  }
+
+  function displayXpStuff() {
+    const currentXp = intVal(currentXpInput.value, 0);
+    const addedXp = intVal(addXpInput.value, 0);
+    const previousLevel = getCurrentLevelData(currentXp);
+    const newXp = currentXp + addedXp;
+    console.log(currentXpInput, addXpInput);
+    console.log(currentXp, addedXp, newXp);
+    const newLevelData = getCurrentLevelData(newXp);
+    const nextLevelData = levelData[levelData.indexOf(newLevelData)+1];
+    console.log(newLevelData, nextLevelData);
+    const newPercentage = percentage(nextLevelData.xp, newLevelData.xp, newXp);
+
+    document.querySelector('.totalXpGained').textContent = friendlyNumber(addedXp) + ' xp';
+
+    document.querySelector('#progressNewTotalBar').style.width = newPercentage + '%';
+    console.log('setting style width to ' + newPercentage);
+
+    document.querySelector('#progressXpSummaryText-previously').textContent = `Level ${previousLevel.level} on ${friendlyNumber(currentXp)}xp`;
+    document.querySelector('#progressXpSummaryText-now').textContent = `Level ${newLevelData.level} on ${friendlyNumber(newXp)}xp`;
+    document.querySelector('#progressXpSummaryText-next').textContent = `Level ${nextLevelData.level} on ${friendlyNumber(nextLevelData.xp)}xp`;
+    document.querySelector('#progressXpSummaryText-percent').textContent = `${newPercentage}% through level ${friendlyNumber(newLevelData.level)}`;
+
+  }
+
+  document.querySelector('#copyXpSessionTotalButton').onclick = () => {
+    const treeCopy = document.querySelector('#xpTotal').cloneNode(true);
+    navigator.clipboard.writeText(treeCopy.outerHTML).then(() => alert('Done')).catch(e => {alert('not done'); console.error(e)});
+  }
+</script>
+</html>
