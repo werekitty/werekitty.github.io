@@ -62,6 +62,7 @@
     <details>
         <summary>Heckin clear data</summary>
         <button type="button" onclick="window.localStorage.clear();window.location.reload()">Clear that heckin data</button>
+        <button type="button" id="targetToCurrentButton">Move target to current</button>
     </details>
 </main>
 <div id="modal" class="hidden">
@@ -237,5 +238,22 @@
     }
 
     document.querySelectorAll('table#mainSpTable td input.current_input, table#mainSpTable td input.target_input').forEach(i => i.onchange = recalculateOnChange);
+
+    document.querySelector('#targetToCurrentButton').onclick = () => {
+        document
+            .querySelectorAll('table#mainSpTable tr:not(.headerRow)')
+            .forEach((row) => {
+                const targetValue = row.querySelector('.target_input').value;
+                if(targetValue) {
+                    row.querySelector('.current_input').value = targetValue;
+                    row.querySelector('.sp_cost').textContent = '0';
+                } else {
+                    row.querySelector('.sp_cost').textContent = '';
+                }
+            });
+
+        doTotal();
+        window.localStorage.setItem('costings', JSON.stringify(toJson()));
+    };
 </script>
 </html>
