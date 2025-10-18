@@ -155,6 +155,41 @@
                 <td>+6<br>
                 </td>
             </tr>
+            <tr>
+                <td>385,000</td>
+                <td>20 (+1)</td>
+                <td> </td>
+                <td> <br>
+                </td>
+            </tr>
+            <tr>
+                <td>415,000</td>
+                <td>20 (+2)</td>
+                <td> </td>
+                <td> <br>
+                </td>
+            </tr>
+            <tr>
+                <td>445,000</td>
+                <td>20 (+3)</td>
+                <td> </td>
+                <td> <br>
+                </td>
+            </tr>
+            <tr>
+                <td>475,000</td>
+                <td>20 (+4)</td>
+                <td> </td>
+                <td> <br>
+                </td>
+            </tr>
+            <tr>
+                <td>505,000</td>
+                <td>20 (+5)</td>
+                <td> </td>
+                <td> <br>
+                </td>
+            </tr>
             </tbody>
         </table>
     </details>
@@ -186,8 +221,8 @@
   const friendlyNumber = i => Math.round(i).toLocaleString('en');
 
   const levelData = Array.from(document.querySelectorAll('#levelsTable tbody tr')).map(tr => {
-    const [xp, level, encounterXp, proficiencyBonus] = Array.from(tr.querySelectorAll('td')).map(td => intVal(td.textContent));
-    return {xp, level, encounterXp, proficiencyBonus}
+    const [xp, level, encounterXp, proficiencyBonus] = Array.from(tr.querySelectorAll('td')).map(td => td.textContent);
+    return {xp: intVal(xp), level, encounterXp: intVal(encounterXp), proficiencyBonus: intVal(proficiencyBonus)}
   });
   const currentXpElement = document.querySelector('#currentXp input');
   const addXpElement = document.querySelector('#addXp input');
